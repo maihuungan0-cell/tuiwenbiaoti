@@ -1,7 +1,31 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { TopicType } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Safely retrieve API key for both Node and Vite environments
+const getApiKey = () => {
+  try {
+    // Try Vite-style env var first (exposed to browser)
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_KEY;
+    }
+  } catch (e) {}
+  
+  try {
+    // Fallback to process.env (Node.js or replacement)
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+  } catch (e) {}
+
+  return "";
+};
+
+const apiKey = getApiKey();
+
+// Initialize the client only if key exists to avoid immediate errors
+const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
 
 const getSystemInstruction = (maxLength: number): string => {
   return `
@@ -78,6 +102,11 @@ export const generateHeadlines = async (
   maxLength: number,
   referenceText?: string
 ): Promise<string[]> => {
+  if (!apiKey || apiKey === 'MISSING_KEY') {
+     console.error("API Key not found. Please check your environment variables (VITE_API_KEY).");
+     throw new Error("API Key 未配置。请在 Vercel 环境变量中添加 VITE_API_KEY。");
+  }
+
   const temperature = 0.6 + (creativity / 100) * 0.8; // Map 0-100 to 0.6-1.4
 
   const responseSchema: Schema = {
@@ -114,6 +143,6 @@ export const generateHeadlines = async (
 
   } catch (error) {
     console.error("Headline generation failed:", error);
-    throw new Error("生成标题失败，请稍后重试。");
+    throw new Error("生成标题失败，请检查 API Key 或稍后重试。");
   }
 };
