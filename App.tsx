@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { TopicType, GeneratedHeadline } from './types';
-import { generateHeadlines } from './services/geminiService';
+import { generateHeadlines, checkApiKey } from './services/geminiService';
 import { TopicSelector } from './components/TopicSelector';
 import { ResultCard } from './components/ResultCard';
-import { Sparkles, History, Trash2, Loader2, Zap, GraduationCap } from 'lucide-react';
+import { Sparkles, History, Trash2, Loader2, Zap, GraduationCap, AlertTriangle, Settings } from 'lucide-react';
 
 export default function App() {
   const [selectedTopic, setSelectedTopic] = useState<TopicType>(TopicType.PHONE_CLEANING);
@@ -14,6 +14,12 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [headlines, setHeadlines] = useState<GeneratedHeadline[]>([]);
   const [history, setHistory] = useState<GeneratedHeadline[]>([]);
+  const [isApiKeyMissing, setIsApiKeyMissing] = useState(false);
+
+  useEffect(() => {
+    // Check for API key on mount
+    setIsApiKeyMissing(!checkApiKey());
+  }, []);
 
   const handleGenerate = useCallback(async () => {
     if (loading) return;
@@ -34,7 +40,7 @@ export default function App() {
       setHeadlines(newHeadlines);
       setHistory(prev => [...newHeadlines, ...prev].slice(0, 50)); // Keep last 50
     } catch (error) {
-      alert('生成失败，请检查网络配置或API Key。');
+      alert('生成失败：' + (error instanceof Error ? error.message : '请检查网络或配置'));
     } finally {
       setLoading(false);
     }
@@ -81,8 +87,32 @@ export default function App() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         
+        {/* API Key Warning Banner */}
+        {isApiKeyMissing && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 animate-pulse">
+            <div className="flex items-start gap-4">
+              <div className="bg-red-100 p-2 rounded-full text-red-600">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-red-700 mb-2">未检测到 API Key，无法生成标题</h3>
+                <div className="text-sm text-red-600 space-y-3">
+                  <p>请按照以下步骤在 Vercel 中配置环境变量：</p>
+                  <ol className="list-decimal list-inside space-y-1 bg-white/50 p-3 rounded-lg border border-red-100">
+                    <li>进入 Vercel 项目页面，点击顶部 <strong>Settings</strong></li>
+                    <li>在左侧菜单选择 <strong>Environment Variables</strong></li>
+                    <li>Key (变量名) 填写：<code className="bg-red-100 px-2 py-0.5 rounded font-mono font-bold select-all">VITE_API_KEY</code> <span className="text-xs text-red-400">(注意不是 API_KEY)</span></li>
+                    <li>Value (变量值) 填写您的：<code className="bg-red-100 px-2 py-0.5 rounded font-mono">AI Studio Key</code></li>
+                    <li>点击 <strong>Save</strong> 后，必须点击部署页面的 <strong>Redeploy</strong> 才能生效！</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Controls Section */}
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <section className={`bg-white rounded-2xl p-6 shadow-sm border border-slate-100 ${isApiKeyMissing ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">第一步：选择推文主题</h2>
           <TopicSelector selectedTopic={selectedTopic} onSelect={setSelectedTopic} />
 
@@ -173,10 +203,10 @@ export default function App() {
           <div className="mt-8">
             <button
               onClick={handleGenerate}
-              disabled={!isFormValid()}
+              disabled={!isFormValid() || isApiKeyMissing}
               className={`
                 w-full flex items-center justify-center gap-2 py-4 rounded-xl text-lg font-bold text-white shadow-lg shadow-indigo-200 transition-all duration-200
-                ${!isFormValid() 
+                ${!isFormValid() || isApiKeyMissing
                   ? 'bg-slate-300 cursor-not-allowed shadow-none' 
                   : 'bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.01] hover:shadow-indigo-300 active:scale-[0.98]'
                 }

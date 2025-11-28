@@ -4,7 +4,7 @@ import { TopicType } from "../types";
 // Safely retrieve API key for both Node and Vite environments
 const getApiKey = () => {
   try {
-    // Try Vite-style env var first (exposed to browser)
+    // Priority 1: Vite-style env var (Standard for Vercel + Vite)
     // @ts-ignore
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
       // @ts-ignore
@@ -13,7 +13,7 @@ const getApiKey = () => {
   } catch (e) {}
   
   try {
-    // Fallback to process.env (Node.js or replacement)
+    // Priority 2: Fallback to process.env (Standard for Node.js)
     if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
       return process.env.API_KEY;
     }
@@ -24,7 +24,14 @@ const getApiKey = () => {
 
 const apiKey = getApiKey();
 
-// Initialize the client only if key exists to avoid immediate errors
+// Helper to check if key is configured (used by UI)
+export const checkApiKey = (): boolean => {
+  return !!apiKey && apiKey !== 'MISSING_KEY';
+};
+
+// Initialize the client
+// We initialize it lazily or with a dummy key if missing to prevent crash on load,
+// but generateHeadlines will throw if it's missing.
 const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
 
 const getSystemInstruction = (maxLength: number): string => {
@@ -102,7 +109,7 @@ export const generateHeadlines = async (
   maxLength: number,
   referenceText?: string
 ): Promise<string[]> => {
-  if (!apiKey || apiKey === 'MISSING_KEY') {
+  if (!checkApiKey()) {
      console.error("API Key not found. Please check your environment variables (VITE_API_KEY).");
      throw new Error("API Key 未配置。请在 Vercel 环境变量中添加 VITE_API_KEY。");
   }
@@ -143,6 +150,6 @@ export const generateHeadlines = async (
 
   } catch (error) {
     console.error("Headline generation failed:", error);
-    throw new Error("生成标题失败，请检查 API Key 或稍后重试。");
+    throw new Error("生成标题失败，请检查 API Key 或网络连接。");
   }
 };
