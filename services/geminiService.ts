@@ -162,6 +162,8 @@ export const generateHeadlines = async (
 
     if (errorString.includes("fetch failed") || errorString.includes("networkerror") || errorString.includes("failed to fetch")) {
       userMessage = "网络连接失败 (Network Error)。\n\n原因：您的浏览器无法连接到 Google API 服务器。\n解决：如果您在中国大陆，请务必开启 VPN (梯子)，并确保开启了【全局代理模式】。Vercel 部署的网页是在您的本地浏览器运行的，不是在海外服务器运行的。";
+    } else if (errorString.includes("429") || errorString.includes("resource_exhausted") || errorString.includes("quota")) {
+      userMessage = "调用频率超限 (429 Resource Exhausted)。\n\n原因：您的免费版 API Key 触发了 Google 的请求频率限制（您点得太快了）。\n解决：请喝口水休息一分钟再试，或者考虑在 Google Cloud 绑定账单以获取更高的配额。";
     } else if (errorString.includes("403") || errorString.includes("permission denied") || errorString.includes("api key not valid")) {
       userMessage = "API Key 无效或权限不足 (403)。\n\n原因：Key 填写错误，或者该 Key 绑定的 Google Cloud 项目没有开启 Gemini API 权限。\n解决：请检查 Vercel 环境变量 VITE_API_KEY 是否准确（不要有多余空格），或尝试重新创建一个 Key。";
     } else if (errorString.includes("503") || errorString.includes("overloaded")) {
