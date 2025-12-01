@@ -29,10 +29,14 @@ export const checkApiKey = (): boolean => {
   return !!apiKey && apiKey !== 'MISSING_KEY';
 };
 
-// Initialize the client
-// We initialize it lazily or with a dummy key if missing to prevent crash on load,
-// but generateHeadlines will throw if it's missing.
-const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
+// Initialize the client function to ensure we use the latest key and handle initialization safely
+const getClient = () => {
+  const key = getApiKey();
+  if (!key) {
+    throw new Error("API_KEY_MISSING");
+  }
+  return new GoogleGenAI({ apiKey: key });
+};
 
 const getSystemInstruction = (maxLength: number): string => {
   return `
@@ -109,22 +113,18 @@ export const generateHeadlines = async (
   maxLength: number,
   referenceText?: string
 ): Promise<string[]> => {
-  if (!checkApiKey()) {
-     console.error("API Key not found. Please check your environment variables (VITE_API_KEY).");
-     throw new Error("API Key 未配置。请在 Vercel 环境变量中添加 VITE_API_KEY。");
-  }
-
-  const temperature = 0.6 + (creativity / 100) * 0.8; // Map 0-100 to 0.6-1.4
-
-  const responseSchema: Schema = {
-    type: Type.ARRAY,
-    items: {
-      type: Type.STRING,
-    },
-    description: "A list of generated headlines.",
-  };
-
   try {
+    const ai = getClient(); // Get client dynamically
+    const temperature = 0.6 + (creativity / 100) * 0.8; // Map 0-100 to 0.6-1.4
+
+    const responseSchema: Schema = {
+      type: Type.ARRAY,
+      items: {
+        type: Type.STRING,
+      },
+      description: "A list of generated headlines.",
+    };
+
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: getPromptForTopic(topic, keyword, maxLength, referenceText),
@@ -148,8 +148,28 @@ export const generateHeadlines = async (
     }
     return [];
 
-  } catch (error) {
-    console.error("Headline generation failed:", error);
-    throw new Error("生成标题失败，请检查 API Key 或网络连接。");
+  } catch (error: any) {
+    console.error("Headline generation failed details:", error);
+    
+    // Improved Error Handling for Chinese Users
+    let userMessage = "未知错误";
+    const errorString = error.toString().toLowerCase();
+    const errorMsg = (error.message || "").toLowerCase();
+
+    if (errorMsg.includes("api_key_missing")) {
+       throw new Error("未检测到 API Key。请在 Vercel 环境变量设置中添加 VITE_API_KEY。");
+    }
+
+    if (errorString.includes("fetch failed") || errorString.includes("networkerror") || errorString.includes("failed to fetch")) {
+      userMessage = "网络连接失败 (Network Error)。\n\n原因：您的浏览器无法连接到 Google API 服务器。\n解决：如果您在中国大陆，请务必开启 VPN (梯子)，并确保开启了【全局代理模式】。Vercel 部署的网页是在您的本地浏览器运行的，不是在海外服务器运行的。";
+    } else if (errorString.includes("403") || errorString.includes("permission denied") || errorString.includes("api key not valid")) {
+      userMessage = "API Key 无效或权限不足 (403)。\n\n原因：Key 填写错误，或者该 Key 绑定的 Google Cloud 项目没有开启 Gemini API 权限。\n解决：请检查 Vercel 环境变量 VITE_API_KEY 是否准确（不要有多余空格），或尝试重新创建一个 Key。";
+    } else if (errorString.includes("503") || errorString.includes("overloaded")) {
+      userMessage = "服务暂时繁忙 (503)。\n\n原因：Google 服务器繁忙。\n解决：请稍后再试。";
+    } else {
+      userMessage = `生成失败: ${error.message || "请检查控制台日志"}`;
+    }
+
+    throw new Error(userMessage);
   }
 };

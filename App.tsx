@@ -3,7 +3,7 @@ import { TopicType, GeneratedHeadline } from './types';
 import { generateHeadlines, checkApiKey } from './services/geminiService';
 import { TopicSelector } from './components/TopicSelector';
 import { ResultCard } from './components/ResultCard';
-import { Sparkles, History, Trash2, Loader2, Zap, GraduationCap, AlertTriangle, Settings, ExternalLink } from 'lucide-react';
+import { Sparkles, History, Trash2, Loader2, Zap, GraduationCap, AlertTriangle, Settings, ExternalLink, XCircle } from 'lucide-react';
 
 export default function App() {
   const [selectedTopic, setSelectedTopic] = useState<TopicType>(TopicType.PHONE_CLEANING);
@@ -15,6 +15,7 @@ export default function App() {
   const [headlines, setHeadlines] = useState<GeneratedHeadline[]>([]);
   const [history, setHistory] = useState<GeneratedHeadline[]>([]);
   const [isApiKeyMissing, setIsApiKeyMissing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for API key on mount
@@ -24,6 +25,7 @@ export default function App() {
   const handleGenerate = useCallback(async () => {
     if (loading) return;
     setLoading(true);
+    setErrorMsg(null); // Clear previous errors
     setHeadlines([]); // Clear current view for new results
 
     try {
@@ -40,7 +42,7 @@ export default function App() {
       setHeadlines(newHeadlines);
       setHistory(prev => [...newHeadlines, ...prev].slice(0, 50)); // Keep last 50
     } catch (error) {
-      alert('生成失败：' + (error instanceof Error ? error.message : '请检查网络或配置'));
+      setErrorMsg(error instanceof Error ? error.message : '发生未知错误');
     } finally {
       setLoading(false);
     }
@@ -259,6 +261,19 @@ export default function App() {
                 </>
               )}
             </button>
+            
+            {/* Error Banner */}
+            {errorMsg && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-red-800">生成出错</h3>
+                  <p className="text-sm text-red-700 whitespace-pre-wrap mt-1 leading-relaxed">
+                    {errorMsg}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
