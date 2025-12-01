@@ -3,7 +3,7 @@ import { TopicType, GeneratedHeadline } from './types';
 import { generateHeadlines, checkApiKey } from './services/geminiService';
 import { TopicSelector } from './components/TopicSelector';
 import { ResultCard } from './components/ResultCard';
-import { Sparkles, History, Trash2, Loader2, Zap, GraduationCap, AlertTriangle, Settings } from 'lucide-react';
+import { Sparkles, History, Trash2, Loader2, Zap, GraduationCap, AlertTriangle, Settings, ExternalLink } from 'lucide-react';
 
 export default function App() {
   const [selectedTopic, setSelectedTopic] = useState<TopicType>(TopicType.PHONE_CLEANING);
@@ -97,13 +97,48 @@ export default function App() {
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-red-700 mb-2">未检测到 API Key，无法生成标题</h3>
                 <div className="text-sm text-red-600 space-y-3">
-                  <p>请按照以下步骤在 Vercel 中配置环境变量：</p>
-                  <ol className="list-decimal list-inside space-y-1 bg-white/50 p-3 rounded-lg border border-red-100">
-                    <li>进入 Vercel 项目页面，点击顶部 <strong>Settings</strong></li>
-                    <li>在左侧菜单选择 <strong>Environment Variables</strong></li>
-                    <li>Key (变量名) 填写：<code className="bg-red-100 px-2 py-0.5 rounded font-mono font-bold select-all">VITE_API_KEY</code> <span className="text-xs text-red-400">(注意不是 API_KEY)</span></li>
-                    <li>Value (变量值) 填写您的：<code className="bg-red-100 px-2 py-0.5 rounded font-mono">AI Studio Key</code></li>
-                    <li>点击 <strong>Save</strong> 后，必须点击部署页面的 <strong>Redeploy</strong> 才能生效！</li>
+                  <p>请按照以下步骤配置 (一次性操作)：</p>
+                  <ol className="list-decimal list-inside space-y-2 bg-white/50 p-4 rounded-lg border border-red-100 text-slate-700">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">1.</span>
+                      <div>
+                        <a 
+                          href="https://aistudio.google.com/app/apikey" 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-indigo-600 font-bold underline hover:text-indigo-800 inline-flex items-center gap-1"
+                        >
+                          点击这里获取 Google API Key <ExternalLink className="w-3 h-3"/>
+                        </a>
+                        <div className="text-xs text-slate-500 mt-1">
+                          提示：点击 "Create API key" -> 选择 <strong>"Create API key in new project"</strong>。
+                          <br/>
+                          <span className="font-bold text-red-500">注意：</span> 这里的“Project”只是谷歌用来统计调用次数的“文件夹”，<strong>不需要上传您的代码/软件</strong>，直接让它自动新建一个空项目即可拿到 Key。
+                        </div>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">2.</span>
+                      <div>回到 Vercel 项目页面 -> <strong>Settings</strong> -> <strong>Environment Variables</strong></div>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">3.</span>
+                      <div>
+                        Key 填：<code className="bg-red-100 px-2 py-0.5 rounded font-mono font-bold select-all">VITE_API_KEY</code>
+                        <span className="text-xs text-red-400 ml-1">(必须带 VITE_)</span>
+                        <div className="text-xs text-slate-500 mt-1">
+                          <span className="font-bold">提示：</span> 如果显示 "Already exists" (已存在)，请在下方列表中找到它，点击右侧的 <span className="inline-block px-1 bg-slate-200 rounded">Edit</span> 修改即可。
+                        </div>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">4.</span>
+                      <div>Value 填：刚才复制的 <code className="bg-red-100 px-2 py-0.5 rounded font-mono">AIzaSy...</code> 开头的长字符串</div>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">5.</span>
+                      <div>保存后，去 <strong>Deployments</strong> 页面 -> 点击最新部署后的三个点 -> <strong>Redeploy</strong> (重新部署)</div>
+                    </li>
                   </ol>
                 </div>
               </div>
