@@ -111,7 +111,7 @@ export default function App() {
                           点击这里获取 Google API Key <ExternalLink className="w-3 h-3"/>
                         </a>
                         <div className="text-xs text-slate-500 mt-1">
-                          提示：点击 "Create API key" -> 选择 <strong>"Create API key in new project"</strong>。
+                          提示：点击 "Create API key" → 选择 <strong>"Create API key in new project"</strong>。
                           <br/>
                           <span className="font-bold text-red-500">注意：</span> 这里的“Project”只是谷歌用来统计调用次数的“文件夹”，<strong>不需要上传您的代码/软件</strong>，直接让它自动新建一个空项目即可拿到 Key。
                         </div>
@@ -119,7 +119,7 @@ export default function App() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5">2.</span>
-                      <div>回到 Vercel 项目页面 -> <strong>Settings</strong> -> <strong>Environment Variables</strong></div>
+                      <div>回到 Vercel 项目页面 → <strong>Settings</strong> → <strong>Environment Variables</strong></div>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5">3.</span>
@@ -137,7 +137,7 @@ export default function App() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5">5.</span>
-                      <div>保存后，去 <strong>Deployments</strong> 页面 -> 点击最新部署后的三个点 -> <strong>Redeploy</strong> (重新部署)</div>
+                      <div>保存后，去 <strong>Deployments</strong> 页面 → 点击最新部署后的三个点 → <strong>Redeploy</strong> (重新部署)</div>
                     </li>
                   </ol>
                 </div>
@@ -173,7 +173,7 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-slate-100">
             {/* Keyword Input */}
             <div className="md:col-span-1">
-              <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">
+              <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
                 {selectedTopic === TopicType.LEARNING ? "新标题侧重点/关键词" : "第二步：关键词 (可选)"}
               </h2>
               <input
