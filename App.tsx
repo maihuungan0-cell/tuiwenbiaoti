@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { TopicType, GeneratedHeadline } from './types';
-import { generateHeadlines, checkApiKey } from './services/geminiService';
+import { generateHeadlines, checkApiKey } from './services/geminiService'; // Keeps filename but logic is Tencent
 import { TopicSelector } from './components/TopicSelector';
 import { ResultCard } from './components/ResultCard';
 import { Sparkles, History, Trash2, Loader2, Zap, GraduationCap, AlertTriangle, Settings, ExternalLink, XCircle } from 'lucide-react';
@@ -18,15 +18,15 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for API key on mount
+    // Check for keys on mount
     setIsApiKeyMissing(!checkApiKey());
   }, []);
 
   const handleGenerate = useCallback(async () => {
     if (loading) return;
     setLoading(true);
-    setErrorMsg(null); // Clear previous errors
-    setHeadlines([]); // Clear current view for new results
+    setErrorMsg(null);
+    setHeadlines([]);
 
     try {
       const results = await generateHeadlines(selectedTopic, customKeyword, creativity, maxLength, referenceText);
@@ -49,7 +49,7 @@ export default function App() {
   }, [selectedTopic, customKeyword, creativity, maxLength, referenceText, loading]);
 
   const handleCopy = (id: string) => {
-    // Optional: track copy stats or visual feedback globally
+    // Optional: track copy stats
   };
 
   const clearHistory = () => {
@@ -71,17 +71,17 @@ export default function App() {
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 p-2 rounded-lg text-white">
+            <div className="bg-blue-600 p-2 rounded-lg text-white">
                <Zap className="w-5 h-5" />
             </div>
             <div>
               <h1 className="text-xl font-black text-slate-800 tracking-tight">爆款推文标题助手</h1>
-              <p className="text-xs text-slate-500 font-medium">降低重复率 · 两段式 · 12字以内</p>
+              <p className="text-xs text-slate-500 font-medium">腾讯混元大模型驱动 · 无需魔法</p>
             </div>
           </div>
           <div className="text-right hidden sm:block">
-            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
-              Gemini 2.5 Flash Driver
+            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+              Tencent Hunyuan Pro
             </span>
           </div>
         </div>
@@ -89,57 +89,41 @@ export default function App() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         
-        {/* API Key Warning Banner */}
+        {/* Missing Key Warning Banner */}
         {isApiKeyMissing && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 animate-pulse">
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 animate-pulse">
             <div className="flex items-start gap-4">
-              <div className="bg-red-100 p-2 rounded-full text-red-600">
-                <AlertTriangle className="w-6 h-6" />
+              <div className="bg-orange-100 p-2 rounded-full text-orange-600">
+                <Settings className="w-6 h-6" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-red-700 mb-2">未检测到 API Key，无法生成标题</h3>
-                <div className="text-sm text-red-600 space-y-3">
-                  <p>请按照以下步骤配置 (一次性操作)：</p>
-                  <ol className="list-decimal list-inside space-y-2 bg-white/50 p-4 rounded-lg border border-red-100 text-slate-700">
+                <h3 className="text-lg font-bold text-orange-800 mb-2">未配置腾讯云密钥 (SecretId / SecretKey)</h3>
+                <div className="text-sm text-orange-700 space-y-3">
+                  <p>您已切换到腾讯云模式，请配置以下环境变量：</p>
+                  <ol className="list-decimal list-inside space-y-2 bg-white/50 p-4 rounded-lg border border-orange-100 text-slate-700">
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5">1.</span>
-                      <div>
-                        <a 
-                          href="https://aistudio.google.com/app/apikey" 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="text-indigo-600 font-bold underline hover:text-indigo-800 inline-flex items-center gap-1"
-                        >
-                          点击这里获取 Google API Key <ExternalLink className="w-3 h-3"/>
-                        </a>
-                        <div className="text-xs text-slate-500 mt-1">
-                          提示：点击 "Create API key" → 选择 <strong>"Create API key in new project"</strong>。
-                          <br/>
-                          <span className="font-bold text-red-500">注意：</span> 这里的“Project”只是谷歌用来统计调用次数的“文件夹”，<strong>不需要上传您的代码/软件</strong>，直接让它自动新建一个空项目即可拿到 Key。
-                        </div>
-                      </div>
+                      <div>进入 Vercel 项目设置 → <strong>Environment Variables</strong></div>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5">2.</span>
-                      <div>回到 Vercel 项目页面 → <strong>Settings</strong> → <strong>Environment Variables</strong></div>
+                      <div>
+                        添加变量名：<code className="bg-orange-100 px-2 py-0.5 rounded font-mono font-bold select-all">VITE_TENCENT_SECRET_ID</code>
+                        <br/>
+                        值：您的 SecretId
+                      </div>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5">3.</span>
                       <div>
-                        Key 填：<code className="bg-red-100 px-2 py-0.5 rounded font-mono font-bold select-all">VITE_API_KEY</code>
-                        <span className="text-xs text-red-400 ml-1">(必须带 VITE_)</span>
-                        <div className="text-xs text-slate-500 mt-1">
-                          <span className="font-bold">提示：</span> 如果显示 "Already exists" (已存在)，请在下方列表中找到它，点击右侧的 <span className="inline-block px-1 bg-slate-200 rounded">Edit</span> 修改即可。
-                        </div>
+                        添加变量名：<code className="bg-orange-100 px-2 py-0.5 rounded font-mono font-bold select-all">VITE_TENCENT_SECRET_KEY</code>
+                        <br/>
+                        值：您的 SecretKey
                       </div>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5">4.</span>
-                      <div>Value 填：刚才复制的 <code className="bg-red-100 px-2 py-0.5 rounded font-mono">AIzaSy...</code> 开头的长字符串</div>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-0.5">5.</span>
-                      <div>保存后，去 <strong>Deployments</strong> 页面 → 点击最新部署后的三个点 → <strong>Redeploy</strong> (重新部署)</div>
+                      <div>保存并 <strong>Redeploy</strong> (重新部署)</div>
                     </li>
                   </ol>
                 </div>
@@ -153,7 +137,7 @@ export default function App() {
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">第一步：选择推文主题</h2>
           <TopicSelector selectedTopic={selectedTopic} onSelect={setSelectedTopic} />
 
-          {/* Reference Text Input (Only for LEARNING mode) */}
+          {/* Reference Text Input */}
           {selectedTopic === TopicType.LEARNING && (
              <div className="mb-6 animate-in fade-in zoom-in duration-300">
                 <div className="flex items-center justify-between mb-2">
@@ -173,7 +157,6 @@ export default function App() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-slate-100">
-            {/* Keyword Input */}
             <div className="md:col-span-1">
               <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
                 {selectedTopic === TopicType.LEARNING ? "新标题侧重点/关键词" : "第二步：关键词 (可选)"}
@@ -191,7 +174,6 @@ export default function App() {
               />
             </div>
             
-            {/* Max Length Slider */}
              <div className="md:col-span-1">
               <div className="flex justify-between mb-3">
                 <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">标题字数</h2>
@@ -214,7 +196,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Creativity Slider */}
             <div className="md:col-span-1">
               <div className="flex justify-between mb-3">
                 <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">创新程度</h2>
@@ -252,7 +233,7 @@ export default function App() {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  AI 正在学习并创作...
+                  混元大模型思考中...
                 </>
               ) : (
                 <>
